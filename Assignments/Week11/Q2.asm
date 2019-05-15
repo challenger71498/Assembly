@@ -1,9 +1,13 @@
-INCLUDE Irvine32.inc
+;	Student Name:	¿À¹Î¼® (Oh Min Seok)
+;	Student ID:		12181632
+
+NCLUDE Irvine32.inc
 
 .386
 .model flat,stdcall
 .stack 4096
 ExitProcess proto,dwExitCode:dword
+
 
 .data
 ;constants
@@ -18,6 +22,7 @@ STR_SPACE byte " ", 0
 count dword 10
 grade dword 0
 gradeChar byte 0
+
 
 .code
 main proc

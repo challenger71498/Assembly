@@ -1,3 +1,6 @@
+;	Student Name:	¿À¹Î¼® (Oh Min Seok)
+;	Student ID:		12181632
+
 INCLUDE Irvine32.inc
 
 .386

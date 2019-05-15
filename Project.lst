@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.16.27030.1	    05/15/19 14:06:47
+Microsoft (R) Macro Assembler Version 14.16.27030.1	    05/15/19 14:28:23
 AddTwo.asm						     Page 1 - 1
 
 
@@ -30,13 +30,14 @@ AddTwo.asm(4) : warning A4011:multiple .MODEL directives found : .MODEL ignored
  00000000			.data
 				;constants
  = 0000000A			arrayLength equ 10
- = 00000003			randomWidth equ 3
- = 00000000			randomOffset equ 0
+ = 00000007			randomWidth equ 7
+ = 0000000A			randomOffset equ 10
 
-				;CountMatches proc constants
- = dword ptr [ebp + 16]		arrayFirst equ <dword ptr [ebp + 16]>
- = dword ptr [ebp + 12]		arraySecond equ <dword ptr [ebp + 12]>
- = dword ptr [ebp + 8]		arrayLengthArg equ <dword ptr [ebp + 8]>
+				;CountNearMatches proc constants
+ = dword ptr [ebp + 20]		arrayFirst equ <dword ptr [ebp + 20]>
+ = dword ptr [ebp + 16]		arraySecond equ <dword ptr [ebp + 16]>
+ = dword ptr [ebp + 12]		arrayLengthArg equ <dword ptr [ebp + 12]>
+ = dword ptr [ebp + 8]		diffArg equ <dword ptr [ebp + 8]>
 
 				;RandomizeArray proc constants
  = dword ptr [esi]		targetArg equ <dword ptr [esi]>
@@ -45,140 +46,179 @@ AddTwo.asm(4) : warning A4011:multiple .MODEL directives found : .MODEL ignored
 				;General proc constants
  = dword ptr [ebp - 4]		countArg equ <dword ptr [ebp - 4]>
 
-				;variables
- 00000000  0000000A [		ary1 dword arrayLength dup(?)
-	    00000000
-	   ]
- 00000028  0000000A [		ary2 dword arrayLength dup(?)
-	    00000000
-	   ]
+				;Strings
+ 00000000 20 00			STR_SPACE byte " ", 0
+ 00000002 41 6C 6C 6F 77	STR_SETDIFF byte "Allowed difference of two elements (Must between 0 ~ 10): ", 0
+	   65 64 20 64 69
+	   66 66 65 72 65
+	   6E 63 65 20 6F
+	   66 20 74 77 6F
+	   20 65 6C 65 6D
+	   65 6E 74 73 20
+	   28 4D 75 73 74
+	   20 62 65 74 77
+	   65 65 6E 20 30
+	   20 7E 20 31 30
+	   29 3A 20 00
 
- 00000050 0000000A		count dword arrayLength
+				;variables
+ 0000003D  0000000A [		ary1 dword arrayLength dup(?)
+	    00000000
+	   ]
+ 00000065  0000000A [		ary2 dword arrayLength dup(?)
+	    00000000
+	   ]
+ 0000008D 00000002		diff dword 2
+
+ 00000091 0000000A		count dword arrayLength
+
 
  00000000			.code
  00000000			main proc
  00000000  E8 00000000 E		call Randomize
 					
- 00000005  68 00000000 R		push offset ary1
- 0000000A  E8 000000C6			call RandomizeArray
+					.repeat
+ 00000005		   *@C0001:
+ 00000005  BA 00000002 R		mov edx, offset STR_SETDIFF
+ 0000000A  E8 00000000 E		call WriteString
+ 0000000F  E8 00000000 E		call ReadInt
+ 00000014  A3 0000008D R		mov diff, eax
+					.until eax <= 10
+ 00000019  83 F8 0A	   *	    cmp    eax, 00Ah
+ 0000001C  77 E7	   *	    ja	@C0001
+
+ 0000001E  68 0000003D R		push offset ary1
+ 00000023  E8 000000EE			call RandomizeArray
 					
- 0000000F  68 00000028 R		push offset ary2
- 00000014  E8 000000BC			call RandomizeArray
+ 00000028  68 00000065 R		push offset ary2
+ 0000002D  E8 000000E4			call RandomizeArray
 
- 00000019  C7 05 00000050 R		mov count, arrayLength
+ 00000032  C7 05 00000091 R		mov count, arrayLength
 	   0000000A
- 00000023  BE 00000000 R		mov esi, offset ary1		;DEBUG: for displaying an array
+ 0000003C  BE 0000003D R		mov esi, offset ary1		;DEBUG: for displaying an array1
 					.while count > 0
- 00000028  EB 10	   *	    jmp    @C0001
- 0000002A		   *@C0002:
- 0000002A  FF 0D 00000050 R			dec count
+ 00000041  EB 1A	   *	    jmp    @C0003
+ 00000043		   *@C0004:
+ 00000043  FF 0D 00000091 R			dec count
 						
- 00000030  8B 06				mov eax, [esi]
- 00000032  E8 00000000 E			call WriteInt
- 00000037  83 C6 04				add esi, 4
+ 00000049  8B 06				mov eax, [esi]
+ 0000004B  E8 00000000 E			call WriteInt
+ 00000050  BA 00000000 R			mov edx, offset STR_SPACE
+ 00000055  E8 00000000 E			call WriteString
+ 0000005A  83 C6 04				add esi, 4
 					.endw
- 0000003A		   *@C0001:
- 0000003A  83 3D 00000050 R
+ 0000005D		   *@C0003:
+ 0000005D  83 3D 00000091 R
 	   00		   *	    cmp    count, 000h
- 00000041  77 E7	   *	    ja	@C0002
- 00000043  E8 00000000 E		call crlf
+ 00000064  77 DD	   *	    ja	@C0004
+ 00000066  E8 00000000 E		call crlf
 
- 00000048  C7 05 00000050 R		mov count, arrayLength
+ 0000006B  C7 05 00000091 R		mov count, arrayLength
 	   0000000A
- 00000052  BE 00000028 R		mov esi, offset ary2		;DEBUG: for displaying an array
+ 00000075  BE 00000065 R		mov esi, offset ary2		;DEBUG: for displaying an array2
 					.while count > 0
- 00000057  EB 10	   *	    jmp    @C0004
- 00000059		   *@C0005:
- 00000059  FF 0D 00000050 R			dec count
+ 0000007A  EB 1A	   *	    jmp    @C0006
+ 0000007C		   *@C0007:
+ 0000007C  FF 0D 00000091 R			dec count
 						
- 0000005F  8B 06				mov eax, [esi]
- 00000061  E8 00000000 E			call WriteInt
- 00000066  83 C6 04				add esi, 4
+ 00000082  8B 06				mov eax, [esi]
+ 00000084  E8 00000000 E			call WriteInt
+ 00000089  BA 00000000 R			mov edx, offset STR_SPACe
+ 0000008E  E8 00000000 E			call WriteString
+ 00000093  83 C6 04				add esi, 4
 					.endw
- 00000069		   *@C0004:
- 00000069  83 3D 00000050 R
+ 00000096		   *@C0006:
+ 00000096  83 3D 00000091 R
 	   00		   *	    cmp    count, 000h
- 00000070  77 E7	   *	    ja	@C0005
- 00000072  E8 00000000 E		call crlf
+ 0000009D  77 DD	   *	    ja	@C0007
+ 0000009F  E8 00000000 E		call crlf
 
- 00000077  68 00000000 R		push offset ary1
- 0000007C  68 00000028 R		push offset ary2
- 00000081  6A 0A			push arrayLength
- 00000083  E8 00000016			call CountMatches
+ 000000A4  68 0000003D R		push offset ary1
+ 000000A9  68 00000065 R		push offset ary2
+ 000000AE  6A 0A			push arrayLength
+ 000000B0  FF 35 0000008D R		push diff
+ 000000B6  E8 00000016			call CountNearMatches
 
- 00000088  E8 00000000 E		call crlf
- 0000008D  E8 00000000 E		call WriteInt
- 00000092  E8 00000000 E		call crlf
+ 000000BB  E8 00000000 E		call crlf
+ 000000C0  E8 00000000 E		call WriteInt
+ 000000C5  E8 00000000 E		call crlf
 
 					invoke ExitProcess,0
- 00000097  6A 00	   *	    push   +000000000h
- 00000099  E8 00000000 E   *	    call   ExitProcess
- 0000009E			main endp
+ 000000CA  6A 00	   *	    push   +000000000h
+ 000000CC  E8 00000000 E   *	    call   ExitProcess
+ 000000D1			main endp
 
 
- 0000009E			CountMatches proc
- 0000009E  C8 0004 00			enter 4,0
- 000000A2  56				push esi
- 000000A3  57				push edi
- 000000A4  53				push ebx
+ 000000D1			CountNearMatches proc
+ 000000D1  C8 0004 00			enter 4,0
+ 000000D5  56				push esi
+ 000000D6  57				push edi
+ 000000D7  53				push ebx
+ 000000D8  52				push edx
 
- 000000A5  8B 45 08			mov eax, arrayLengthArg
- 000000A8  89 45 FC			mov countArg, eax
- 000000AB  B8 00000000			mov eax, 0
- 000000B0  8B 75 10			mov esi, arrayFirst
- 000000B3  8B 7D 0C			mov edi, arraySecond
+ 000000D9  8B 45 0C			mov eax, arrayLengthArg
+ 000000DC  89 45 FC			mov countArg, eax
+ 000000DF  B8 00000000			mov eax, 0
+ 000000E4  8B 75 14			mov esi, arrayFirst
+ 000000E7  8B 7D 10			mov edi, arraySecond
 					.while countArg > 0
- 000000B6  EB 10	   *	    jmp    @C0007
- 000000B8		   *@C0008:
- 000000B8  FF 4D FC				dec countArg
- 000000BB  8B 1F				mov ebx, [edi]
-						.if dword ptr [esi] == ebx
- 000000BD  39 1E	   *	    cmp    dword ptr [esi], ebx
- 000000BF  75 01	   *	    jne    @C0009
- 000000C1  40						inc eax
+ 000000EA  EB 1C	   *	    jmp    @C0009
+ 000000EC		   *@C000A:
+ 000000EC  FF 4D FC				dec countArg
+ 000000EF  8B 1F				mov ebx, [edi]
+ 000000F1  03 5D 08				add ebx, diffArg
+ 000000F4  8B 17				mov edx, [edi]
+ 000000F6  2B 55 08				sub edx, diffArg
+						.if dword ptr [esi] >= edx && dword ptr [esi] <= ebx
+ 000000F9  39 16	   *	    cmp    dword ptr [esi], edx
+ 000000FB  72 05	   *	    jb	@C000B
+ 000000FD  39 1E	   *	    cmp    dword ptr [esi], ebx
+ 000000FF  77 01	   *	    ja	@C000B
+ 00000101  40						inc eax
 						.endif
- 000000C2		   *@C0009:
- 000000C2  83 C7 04				add edi, 4
- 000000C5  83 C6 04				add esi, 4
+ 00000102		   *@C000B:
+ 00000102  83 C7 04				add edi, 4
+ 00000105  83 C6 04				add esi, 4
 					.endw
- 000000C8		   *@C0007:
- 000000C8  83 7D FC 00	   *	    cmp    dword ptr [ebp - 004h], 000h
- 000000CC  77 EA	   *	    ja	@C0008
+ 00000108		   *@C0009:
+ 00000108  83 7D FC 00	   *	    cmp    dword ptr [ebp - 004h], 000h
+ 0000010C  77 DE	   *	    ja	@C000A
 
- 000000CE  5B				pop ebx
- 000000CF  5F				pop edi
- 000000D0  5E				pop esi
- 000000D1  C9				leave
- 000000D2  C2 000C			ret 12
- 000000D5			CountMatches endp
+ 0000010E  5A				pop edx
+ 0000010F  5B				pop ebx
+ 00000110  5F				pop edi
+ 00000111  5E				pop esi
+ 00000112  C9				leave
+ 00000113  C2 0010			ret 16
+ 00000116			CountNearMatches endp
 
 
- 000000D5			RandomizeArray proc
- 000000D5  C8 0004 00			enter 4,0
- 000000D9  60				pushad
- 000000DA  C7 45 FC			mov countArg, arrayLength
+ 00000116			RandomizeArray proc
+ 00000116  C8 0004 00			enter 4,0
+ 0000011A  60				pushad
+ 0000011B  C7 45 FC			mov countArg, arrayLength
 	   0000000A
- 000000E1  8B 75 08			mov esi, targetAddr
+ 00000122  8B 75 08			mov esi, targetAddr
 					.while countArg > 0
- 000000E4  EB 15	   *	    jmp    @C000C
- 000000E6		   *@C000D:
- 000000E6  FF 4D FC				dec countArg
- 000000E9  B8 00000003				mov eax, randomWidth
- 000000EE  E8 00000000 E			call RandomRange
- 000000F3  83 C0 00				add eax, randomOffset
- 000000F6  89 06				mov targetArg, eax
- 000000F8  83 C6 04				add esi, 4
+ 00000125  EB 15	   *	    jmp    @C000F
+ 00000127		   *@C0010:
+ 00000127  FF 4D FC				dec countArg
+ 0000012A  B8 00000007				mov eax, randomWidth
+ 0000012F  E8 00000000 E			call RandomRange
+ 00000134  83 C0 0A				add eax, randomOffset
+ 00000137  89 06				mov targetArg, eax
+ 00000139  83 C6 04				add esi, 4
 					.endw
- 000000FB		   *@C000C:
- 000000FB  83 7D FC 00	   *	    cmp    dword ptr [ebp - 004h], 000h
- 000000FF  77 E5	   *	    ja	@C000D
- 00000101  61				popad
- 00000102  C9				leave
- 00000103  C2 0004			ret 4
- 00000106			RandomizeArray endp
+ 0000013C		   *@C000F:
+ 0000013C  83 7D FC 00	   *	    cmp    dword ptr [ebp - 004h], 000h
+ 00000140  77 E5	   *	    ja	@C0010
+ 00000142  61				popad
+ 00000143  C9				leave
+ 00000144  C2 0004			ret 4
+ 00000147			RandomizeArray endp
 
 				end main
-Microsoft (R) Macro Assembler Version 14.16.27030.1	    05/15/19 14:06:47
+Microsoft (R) Macro Assembler Version 14.16.27030.1	    05/15/19 14:28:23
 AddTwo.asm						     Symbols 2 - 1
 
 
@@ -272,8 +312,8 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
-_DATA  . . . . . . . . . . . . .	32 Bit	 00000054 Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 00000106 Para	  Public  'CODE'	
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000095 Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000147 Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
@@ -283,7 +323,7 @@ Procedures, parameters, and locals:
 CloseFile  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 CloseHandle  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Clrscr . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-CountMatches . . . . . . . . . .	P Near	 0000009E _TEXT	Length= 00000037 Public STDCALL
+CountNearMatches . . . . . . . .	P Near	 000000D1 _TEXT	Length= 00000045 Public STDCALL
 CreateFileA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 CreateOutputFile . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Crlf . . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -331,7 +371,7 @@ ParseInteger32 . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 PeekConsoleInputA  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Random32 . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 RandomRange  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-RandomizeArray . . . . . . . . .	P Near	 000000D5 _TEXT	Length= 00000031 Public STDCALL
+RandomizeArray . . . . . . . . .	P Near	 00000116 _TEXT	Length= 00000031 Public STDCALL
 Randomize  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ReadChar . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ReadConsoleA . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -382,7 +422,7 @@ WriteStackFrame  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000009E Public STDCALL
+main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 000000D1 Public STDCALL
 printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 scanf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 wsprintfA  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
@@ -516,6 +556,8 @@ SHIFT_PRESSED  . . . . . . . . .	Number	 00000010h
 STD_ERROR_HANDLE . . . . . . . .	Number	 -0000000Ch   
 STD_INPUT_HANDLE . . . . . . . .	Number	 -0000000Ah   
 STD_OUTPUT_HANDLE  . . . . . . .	Number	 -0000000Bh   
+STR_SETDIFF  . . . . . . . . . .	Byte	 00000002 _DATA	
+STR_SPACE  . . . . . . . . . . .	Byte	 00000000 _DATA	
 SetConsoleTitle  . . . . . . . .	Text   	 SetConsoleTitleA
 TAB  . . . . . . . . . . . . . .	Number	 00000009h   
 TRUE . . . . . . . . . . . . . .	Number	 00000001h   
@@ -601,18 +643,20 @@ VK_UP  . . . . . . . . . . . . .	Number	 00000026h
 WINDOW_BUFFER_SIZE_EVENT . . . .	Number	 00000004h   
 WriteConsoleOutputCharacter  . .	Text   	 WriteConsoleOutputCharacterA
 WriteConsole . . . . . . . . . .	Text   	 WriteConsoleA
-arrayFirst . . . . . . . . . . .	Text   	 dword ptr [ebp + 16]
-arrayLengthArg . . . . . . . . .	Text   	 dword ptr [ebp + 8]
+arrayFirst . . . . . . . . . . .	Text   	 dword ptr [ebp + 20]
+arrayLengthArg . . . . . . . . .	Text   	 dword ptr [ebp + 12]
 arrayLength  . . . . . . . . . .	Number	 0000000Ah   
-arraySecond  . . . . . . . . . .	Text   	 dword ptr [ebp + 12]
-ary1 . . . . . . . . . . . . . .	DWord	 00000000 _DATA	
-ary2 . . . . . . . . . . . . . .	DWord	 00000028 _DATA	
+arraySecond  . . . . . . . . . .	Text   	 dword ptr [ebp + 16]
+ary1 . . . . . . . . . . . . . .	DWord	 0000003D _DATA	
+ary2 . . . . . . . . . . . . . .	DWord	 00000065 _DATA	
 black  . . . . . . . . . . . . .	Number	 00000000h   
 blue . . . . . . . . . . . . . .	Number	 00000001h   
 brown  . . . . . . . . . . . . .	Number	 00000006h   
 countArg . . . . . . . . . . . .	Text   	 dword ptr [ebp - 4]
-count  . . . . . . . . . . . . .	DWord	 00000050 _DATA	
+count  . . . . . . . . . . . . .	DWord	 00000091 _DATA	
 cyan . . . . . . . . . . . . . .	Number	 00000003h   
+diffArg  . . . . . . . . . . . .	Text   	 dword ptr [ebp + 8]
+diff . . . . . . . . . . . . . .	DWord	 0000008D _DATA	
 exit . . . . . . . . . . . . . .	Text   	 INVOKE ExitProcess,0
 gray . . . . . . . . . . . . . .	Number	 00000008h   
 green  . . . . . . . . . . . . .	Number	 00000002h   
@@ -623,8 +667,8 @@ lightGreen . . . . . . . . . . .	Number	 0000000Ah
 lightMagenta . . . . . . . . . .	Number	 0000000Dh   
 lightRed . . . . . . . . . . . .	Number	 0000000Ch   
 magenta  . . . . . . . . . . . .	Number	 00000005h   
-randomOffset . . . . . . . . . .	Number	 00000000h   
-randomWidth  . . . . . . . . . .	Number	 00000003h   
+randomOffset . . . . . . . . . .	Number	 0000000Ah   
+randomWidth  . . . . . . . . . .	Number	 00000007h   
 red  . . . . . . . . . . . . . .	Number	 00000004h   
 targetAddr . . . . . . . . . . .	Text   	 dword ptr [ebp + 8]
 targetArg  . . . . . . . . . . .	Text   	 dword ptr [esi]
