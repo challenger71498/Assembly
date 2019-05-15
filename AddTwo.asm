@@ -8,12 +8,19 @@ ExitProcess proto,dwExitCode:dword
 .data
 ;constants
 arrayLength equ 10
-randomWidth equ 51
-randomOffset equ 50
+randomWidth equ 3
+randomOffset equ 0
 
-;RandomizeArary proc constants
+;CountMatches proc constants
+arrayFirst equ <dword ptr [ebp + 16]>
+arraySecond equ <dword ptr [ebp + 12]>
+arrayLengthArg equ <dword ptr [ebp + 8]>
+
+;RandomizeArray proc constants
 targetArg equ <dword ptr [esi]>
 targetAddr equ <dword ptr [ebp + 8]>
+
+;General proc constants
 countArg equ <dword ptr [ebp - 4]>
 
 ;variables
@@ -32,7 +39,8 @@ main proc
 	push offset ary2
 	call RandomizeArray
 
-	mov esi, offset ary1
+	mov count, arrayLength
+	mov esi, offset ary1		;DEBUG: for displaying an array
 	.while count > 0
 		dec count
 		
@@ -40,21 +48,60 @@ main proc
 		call WriteInt
 		add esi, 4
 	.endw
+	call crlf
 
-	;push ary1
-	;push ary2
-	;push arrayLength
-	;call CountMatches
+	mov count, arrayLength
+	mov esi, offset ary2		;DEBUG: for displaying an array
+	.while count > 0
+		dec count
+		
+		mov eax, [esi]
+		call WriteInt
+		add esi, 4
+	.endw
+	call crlf
+
+	push offset ary1
+	push offset ary2
+	push arrayLength
+	call CountMatches
+
+	call crlf
+	call WriteInt
+	call crlf
 
 	invoke ExitProcess,0
 main endp
 
-CountMatches proc
-	enter 0,0
 
+CountMatches proc
+	enter 4,0
+	push esi
+	push edi
+	push ebx
+
+	mov eax, arrayLengthArg
+	mov countArg, eax
+	mov eax, 0
+	mov esi, arrayFirst
+	mov edi, arraySecond
+	.while countArg > 0
+		dec countArg
+		mov ebx, [edi]
+		.if dword ptr [esi] == ebx
+			inc eax
+		.endif
+		add edi, 4
+		add esi, 4
+	.endw
+
+	pop ebx
+	pop edi
+	pop esi
 	leave
 	ret 12
 CountMatches endp
+
 
 RandomizeArray proc
 	enter 4,0
