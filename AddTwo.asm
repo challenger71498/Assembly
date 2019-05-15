@@ -1,3 +1,6 @@
+;	Student Name:	¿À¹Î¼® (Oh Min Seok)
+;	Student ID:		12181632
+
 INCLUDE Irvine32.inc
 
 .386
@@ -5,144 +8,103 @@ INCLUDE Irvine32.inc
 .stack 4096
 ExitProcess proto,dwExitCode:dword
 
+
 .data
-;constants
-arrayLength equ 10
-randomWidth equ 7
-randomOffset equ 10
 
-;CountNearMatches proc constants
-arrayFirst equ <dword ptr [ebp + 20]>
-arraySecond equ <dword ptr [ebp + 16]>
-arrayLengthArg equ <dword ptr [ebp + 12]>
-diffArg equ <dword ptr [ebp + 8]>
-
-;RandomizeArray proc constants
-targetArg equ <dword ptr [esi]>
-targetAddr equ <dword ptr [ebp + 8]>
-
-;General proc constants
-countArg equ <dword ptr [ebp - 4]>
-
-;Strings
-STR_SPACE byte " ", 0
-STR_SETDIFF byte "Allowed difference of two elements (Must between 0 ~ 10): ", 0
+;string variables
+STRING_WHAT_WANT byte "What do you want to do?", 0
+STRING_HOW_MULTIPLY byte "How many numbers do you want to multiply? <max = 5>", 0
+STRING_HOW_DIVIDE byte "How many numbers do you want to divide? <max = 5>", 0
+STRING_INSERT byte "Insert a number: ", 0
+STRING_RESULT byte "The result is ", 0
+STRING_ONE byte "    1- Multiply numbers", 0
+STRING_TWO byte "    2- Divide numbers", 0
+STRING_THREE byte "    3- Exit", 0
 
 ;variables
-ary1 dword arrayLength dup(?)
-ary2 dword arrayLength dup(?)
-diff dword 2
-
-count dword arrayLength
+count dword 0
+var dword 0
 
 
 .code
 main proc
-	call Randomize
-	
-	.repeat
-	mov edx, offset STR_SETDIFF
-	call WriteString
-	call ReadInt
-	mov diff, eax
-	.until eax <= 10
+	.repeat																					;	repeat until get 3
+		mov edx, offset STRING_WHAT_WANT													;	1. Display Command Menus
+		call WriteString																	;	
+		call crlf																			;		
+		mov edx, offset STRING_ONE															;	
+		call WriteString																	;	
+		call crlf																			;	
+		mov edx, offset STRING_TWO															;	
+		call WriteString																	;	
+		call crlf																			;	
+		mov edx, offset STRING_THREE														;	
+		call WriteString																	;	
+		call crlf																			;	
+		call ReadChar																		;	
+		call crlf																			;	
+																							;	2. If statement whether al is '1', '2', or '3'
+		.if al == '1'																		;		al == 1
+			mov edx, offset STRING_HOW_MULTIPLY												;	
+			call WriteString																;	
+			call crlf																		;	
+			call ReadInt																	;			Get the numbers to multiply.
+			.if (eax > 0) && (eax <= 5)														;			If the number is between 1 to 5,
+				dec eax																		;				Decrease eax, because I will get a number before whlie statement starts.
+				mov count, eax																;				Move eax to count.
+				mov edx, offset STRING_INSERT												;				
+				call WriteString															;	
+				call ReadInt																;				Get the first number.
+				mov var, eax																;				Now move eax to var.
+				.while count > 0															;				Loop until count is zero.
+					dec count																;					Decrease count.
+					mov edx, offset STRING_INSERT											;					
+					call WriteString														;	
+					call ReadInt															;					Get a number to eax.
+					imul var																;					Multiply var to eax. Note that var is the one saving multiplied numbers accumulatively.
+					mov var, eax															;					Now move eax, multiplied number, to var again.
+				.endw																		;				End of loop
+				mov edx, offset STRING_RESULT												;				
+				call WriteString															;	
+				mov eax, var																;				Move var to eax, to print the result of multiplication.
+				call WriteInt																;				Print result.
+				call crlf																	;				
+			.endif																			;			End of if.
+		.elseif al == '2'																	;		al == 2
+		mov edx, offset STRING_HOW_DIVIDE													;	
+			call WriteString																;	
+			call crlf																		;	
+			call ReadInt																	;			Get the numbers to divide.
+			.if (eax > 0) && (eax <= 5)														;			If the number is between 1 to 5,
+				dec eax																		;				Decrease eax, same reason as multiplication.
+				mov count, eax																;				Move eax to count.
+				mov edx, offset STRING_INSERT												;				
+				call WriteString															;	
+				call ReadInt																;				Get the first number, number to be divided.
+				mov var, eax																;				Move eax to var.
+				.while count > 0															;				Loop until count is zero.
+					dec count																;					Decrease count.
+					mov edx, offset STRING_INSERT											;	
+					call WriteString														;	
+					call ReadInt															;					Get a number to eax.
+					mov edx, 0																;					Set edx to zero, to prevent errors by dummy data.
+					xchg eax, var															;					Exchange eax and var, to divide base number, not a divisor just gotten.
+					idiv var																;					Divide eax by var.
+					mov var, eax															;					Move eax, the quotient, to var.
+				.endw																		;				End of loop.
+				mov edx, offset STRING_RESULT												;	
+				call WriteString															;	
+				mov eax, var																;				Move var to eax, to print the result of division.
+				call WriteInt																;				Print result.
+				call crlf																	;	
+			.endif																			;			End of if.
+		.endif																				;		End of if.
+																							;	
+		call crlf																			;	
+	.until al == '3'																		;		End of loop. Exit this loop when al == '3'.
 
-	push offset ary1
-	call RandomizeArray
-	
-	push offset ary2
-	call RandomizeArray
 
-	mov count, arrayLength
-	mov esi, offset ary1		;DEBUG: for displaying an array1
-	.while count > 0
-		dec count
-		
-		mov eax, [esi]
-		call WriteInt
-		mov edx, offset STR_SPACE
-		call WriteString
-		add esi, 4
-	.endw
-	call crlf
-
-	mov count, arrayLength
-	mov esi, offset ary2		;DEBUG: for displaying an array2
-	.while count > 0
-		dec count
-		
-		mov eax, [esi]
-		call WriteInt
-		mov edx, offset STR_SPACe
-		call WriteString
-		add esi, 4
-	.endw
-	call crlf
-
-	push offset ary1
-	push offset ary2
-	push arrayLength
-	push diff
-	call CountNearMatches
-
-	call crlf
-	call WriteInt
-	call crlf
 
 	invoke ExitProcess,0
 main endp
-
-
-CountNearMatches proc
-	enter 4,0
-	push esi
-	push edi
-	push ebx
-	push edx
-
-	mov eax, arrayLengthArg
-	mov countArg, eax
-	mov eax, 0
-	mov esi, arrayFirst
-	mov edi, arraySecond
-	.while countArg > 0
-		dec countArg
-		mov ebx, [edi]
-		add ebx, diffArg
-		mov edx, [edi]
-		sub edx, diffArg
-		.if dword ptr [esi] >= edx && dword ptr [esi] <= ebx
-			inc eax
-		.endif
-		add edi, 4
-		add esi, 4
-	.endw
-
-	pop edx
-	pop ebx
-	pop edi
-	pop esi
-	leave
-	ret 16
-CountNearMatches endp
-
-
-RandomizeArray proc
-	enter 4,0
-	pushad
-	mov countArg, arrayLength
-	mov esi, targetAddr
-	.while countArg > 0
-		dec countArg
-		mov eax, randomWidth
-		call RandomRange
-		add eax, randomOffset
-		mov targetArg, eax
-		add esi, 4
-	.endw
-	popad
-	leave
-	ret 4
-RandomizeArray endp
-
 end main

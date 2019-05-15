@@ -83,25 +83,25 @@ main proc
 				call ReadInt																;				Get the first number, number to be divided.
 				mov var, eax																;				Move eax to var.
 				.while count > 0															;				Loop until count is zero.
-					dec count																;	
+					dec count																;					Decrease count.
 					mov edx, offset STRING_INSERT											;	
 					call WriteString														;	
-					call ReadInt															;	
-					mov edx, 0																;	
-					xchg eax, var															;	
-					idiv var																;	
-					mov var, eax															;	
-				.endw																		;	
+					call ReadInt															;					Get a number to eax.
+					mov edx, 0																;					Set edx to zero, to prevent errors by dummy data.
+					xchg eax, var															;					Exchange eax and var, to divide base number, not a divisor just gotten.
+					idiv var																;					Divide eax by var.
+					mov var, eax															;					Move eax, the quotient, to var.
+				.endw																		;				End of loop.
 				mov edx, offset STRING_RESULT												;	
 				call WriteString															;	
-				mov eax, var																;	
-				call WriteInt																;	
+				mov eax, var																;				Move var to eax, to print the result of division.
+				call WriteInt																;				Print result.
 				call crlf																	;	
-			.endif																			;	
-		.endif																				;	
+			.endif																			;			End of if.
+		.endif																				;		End of if.
 																							;	
 		call crlf																			;	
-	.until al == '3'																		;	
+	.until al == '3'																		;		End of loop. Exit this loop when al == '3'.
 
 
 

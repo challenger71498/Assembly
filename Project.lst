@@ -1,6 +1,9 @@
-Microsoft (R) Macro Assembler Version 14.16.27030.1	    05/15/19 14:28:23
+Microsoft (R) Macro Assembler Version 14.16.27030.1	    05/15/19 17:17:03
 AddTwo.asm						     Page 1 - 1
 
+
+				;	Student Name:	¿À¹Î¼® (Oh Min Seok)
+				;	Student ID:		12181632
 
 				INCLUDE Irvine32.inc
 			      C ; Include file for Irvine32.lib             (Irvine32.inc)
@@ -23,202 +26,184 @@ AddTwo.asm						     Page 1 - 1
 
 				.386
 				.model flat,stdcall
-AddTwo.asm(4) : warning A4011:multiple .MODEL directives found : .MODEL ignored
+AddTwo.asm(7) : warning A4011:multiple .MODEL directives found : .MODEL ignored
 				.stack 4096
 				ExitProcess proto,dwExitCode:dword
 
+
  00000000			.data
-				;constants
- = 0000000A			arrayLength equ 10
- = 00000007			randomWidth equ 7
- = 0000000A			randomOffset equ 10
 
-				;CountNearMatches proc constants
- = dword ptr [ebp + 20]		arrayFirst equ <dword ptr [ebp + 20]>
- = dword ptr [ebp + 16]		arraySecond equ <dword ptr [ebp + 16]>
- = dword ptr [ebp + 12]		arrayLengthArg equ <dword ptr [ebp + 12]>
- = dword ptr [ebp + 8]		diffArg equ <dword ptr [ebp + 8]>
-
-				;RandomizeArray proc constants
- = dword ptr [esi]		targetArg equ <dword ptr [esi]>
- = dword ptr [ebp + 8]		targetAddr equ <dword ptr [ebp + 8]>
-
-				;General proc constants
- = dword ptr [ebp - 4]		countArg equ <dword ptr [ebp - 4]>
-
-				;Strings
- 00000000 20 00			STR_SPACE byte " ", 0
- 00000002 41 6C 6C 6F 77	STR_SETDIFF byte "Allowed difference of two elements (Must between 0 ~ 10): ", 0
-	   65 64 20 64 69
-	   66 66 65 72 65
-	   6E 63 65 20 6F
-	   66 20 74 77 6F
-	   20 65 6C 65 6D
-	   65 6E 74 73 20
-	   28 4D 75 73 74
-	   20 62 65 74 77
-	   65 65 6E 20 30
-	   20 7E 20 31 30
-	   29 3A 20 00
+				;string variables
+ 00000000 57 68 61 74 20	STRING_WHAT_WANT byte "What do you want to do?", 0
+	   64 6F 20 79 6F
+	   75 20 77 61 6E
+	   74 20 74 6F 20
+	   64 6F 3F 00
+ 00000018 48 6F 77 20 6D	STRING_HOW_MULTIPLY byte "How many numbers do you want to multiply? <max = 5>", 0
+	   61 6E 79 20 6E
+	   75 6D 62 65 72
+	   73 20 64 6F 20
+	   79 6F 75 20 77
+	   61 6E 74 20 74
+	   6F 20 6D 75 6C
+	   74 69 70 6C 79
+	   3F 20 3C 6D 61
+	   78 20 3D 20 35
+	   3E 00
+ 0000004C 48 6F 77 20 6D	STRING_HOW_DIVIDE byte "How many numbers do you want to divide? <max = 5>", 0
+	   61 6E 79 20 6E
+	   75 6D 62 65 72
+	   73 20 64 6F 20
+	   79 6F 75 20 77
+	   61 6E 74 20 74
+	   6F 20 64 69 76
+	   69 64 65 3F 20
+	   3C 6D 61 78 20
+	   3D 20 35 3E 00
+ 0000007E 49 6E 73 65 72	STRING_INSERT byte "Insert a number: ", 0
+	   74 20 61 20 6E
+	   75 6D 62 65 72
+	   3A 20 00
+ 00000090 54 68 65 20 72	STRING_RESULT byte "The result is ", 0
+	   65 73 75 6C 74
+	   20 69 73 20 00
+ 0000009F 20 20 20 20 31	STRING_ONE byte "    1- Multiply numbers", 0
+	   2D 20 4D 75 6C
+	   74 69 70 6C 79
+	   20 6E 75 6D 62
+	   65 72 73 00
+ 000000B7 20 20 20 20 32	STRING_TWO byte "    2- Divide numbers", 0
+	   2D 20 44 69 76
+	   69 64 65 20 6E
+	   75 6D 62 65 72
+	   73 00
+ 000000CD 20 20 20 20 33	STRING_THREE byte "    3- Exit", 0
+	   2D 20 45 78 69
+	   74 00
 
 				;variables
- 0000003D  0000000A [		ary1 dword arrayLength dup(?)
-	    00000000
-	   ]
- 00000065  0000000A [		ary2 dword arrayLength dup(?)
-	    00000000
-	   ]
- 0000008D 00000002		diff dword 2
-
- 00000091 0000000A		count dword arrayLength
+ 000000D9 00000000		count dword 0
+ 000000DD 00000000		var dword 0
 
 
  00000000			.code
  00000000			main proc
- 00000000  E8 00000000 E		call Randomize
-					
-					.repeat
- 00000005		   *@C0001:
- 00000005  BA 00000002 R		mov edx, offset STR_SETDIFF
- 0000000A  E8 00000000 E		call WriteString
- 0000000F  E8 00000000 E		call ReadInt
- 00000014  A3 0000008D R		mov diff, eax
-					.until eax <= 10
- 00000019  83 F8 0A	   *	    cmp    eax, 00Ah
- 0000001C  77 E7	   *	    ja	@C0001
-
- 0000001E  68 0000003D R		push offset ary1
- 00000023  E8 000000EE			call RandomizeArray
-					
- 00000028  68 00000065 R		push offset ary2
- 0000002D  E8 000000E4			call RandomizeArray
-
- 00000032  C7 05 00000091 R		mov count, arrayLength
-	   0000000A
- 0000003C  BE 0000003D R		mov esi, offset ary1		;DEBUG: for displaying an array1
-					.while count > 0
- 00000041  EB 1A	   *	    jmp    @C0003
- 00000043		   *@C0004:
- 00000043  FF 0D 00000091 R			dec count
-						
- 00000049  8B 06				mov eax, [esi]
- 0000004B  E8 00000000 E			call WriteInt
- 00000050  BA 00000000 R			mov edx, offset STR_SPACE
- 00000055  E8 00000000 E			call WriteString
- 0000005A  83 C6 04				add esi, 4
-					.endw
- 0000005D		   *@C0003:
- 0000005D  83 3D 00000091 R
+					.repeat																					;	repeat until get 3
+ 00000000		   *@C0001:
+ 00000000  BA 00000000 R			mov edx, offset STRING_WHAT_WANT													;	1. Display Command Menus
+ 00000005  E8 00000000 E			call WriteString																	;	
+ 0000000A  E8 00000000 E			call crlf																			;		
+ 0000000F  BA 0000009F R			mov edx, offset STRING_ONE															;	
+ 00000014  E8 00000000 E			call WriteString																	;	
+ 00000019  E8 00000000 E			call crlf																			;	
+ 0000001E  BA 000000B7 R			mov edx, offset STRING_TWO															;	
+ 00000023  E8 00000000 E			call WriteString																	;	
+ 00000028  E8 00000000 E			call crlf																			;	
+ 0000002D  BA 000000CD R			mov edx, offset STRING_THREE														;	
+ 00000032  E8 00000000 E			call WriteString																	;	
+ 00000037  E8 00000000 E			call crlf																			;	
+ 0000003C  E8 00000000 E			call ReadChar																		;	
+ 00000041  E8 00000000 E			call crlf																			;	
+																											;	2. If statement whether al is '1', '2', or '3'
+						.if al == '1'																		;		al == 1
+ 00000046  3C 31	   *	    cmp    al, '1'
+ 00000048  0F 85 00000089  *	    jne    @C0002
+ 0000004E  BA 00000018 R				mov edx, offset STRING_HOW_MULTIPLY												;	
+ 00000053  E8 00000000 E				call WriteString																;	
+ 00000058  E8 00000000 E				call crlf																		;	
+ 0000005D  E8 00000000 E				call ReadInt																	;			Get the numbers to multiply.
+							.if (eax > 0) && (eax <= 5)														;			If the number is between 1 to 5,
+ 00000062  83 F8 00	   *	    cmp    eax, 000h
+ 00000065  0F 86 000000FB  *	    jbe    @C0004
+ 0000006B  83 F8 05	   *	    cmp    eax, 005h
+ 0000006E  0F 87 000000F2  *	    ja	@C0004
+ 00000074  48							dec eax																		;				Decrease eax, because I will get a number before whlie statement starts.
+ 00000075  A3 000000D9 R					mov count, eax																;				Move eax to count.
+ 0000007A  BA 0000007E R					mov edx, offset STRING_INSERT												;				
+ 0000007F  E8 00000000 E					call WriteString															;	
+ 00000084  E8 00000000 E					call ReadInt																;				Get the first number.
+ 00000089  A3 000000DD R					mov var, eax																;				Now move eax to var.
+								.while count > 0															;				Loop until count is zero.
+ 0000008E  EB 20	   *	    jmp    @C0007
+ 00000090		   *@C0008:
+ 00000090  FF 0D 000000D9 R						dec count																;					Decrease count.
+ 00000096  BA 0000007E R						mov edx, offset STRING_INSERT											;					
+ 0000009B  E8 00000000 E						call WriteString														;	
+ 000000A0  E8 00000000 E						call ReadInt															;					Get a number to eax.
+ 000000A5  F7 2D 000000DD R						imul var																;					Multiply var to eax. Note that var is the one saving multiplied numbers accumulatively.
+ 000000AB  A3 000000DD R						mov var, eax															;					Now move eax, multiplied number, to var again.
+								.endw																		;				End of loop
+ 000000B0		   *@C0007:
+ 000000B0  83 3D 000000D9 R
 	   00		   *	    cmp    count, 000h
- 00000064  77 DD	   *	    ja	@C0004
- 00000066  E8 00000000 E		call crlf
-
- 0000006B  C7 05 00000091 R		mov count, arrayLength
-	   0000000A
- 00000075  BE 00000065 R		mov esi, offset ary2		;DEBUG: for displaying an array2
-					.while count > 0
- 0000007A  EB 1A	   *	    jmp    @C0006
- 0000007C		   *@C0007:
- 0000007C  FF 0D 00000091 R			dec count
-						
- 00000082  8B 06				mov eax, [esi]
- 00000084  E8 00000000 E			call WriteInt
- 00000089  BA 00000000 R			mov edx, offset STR_SPACe
- 0000008E  E8 00000000 E			call WriteString
- 00000093  83 C6 04				add esi, 4
-					.endw
- 00000096		   *@C0006:
- 00000096  83 3D 00000091 R
+ 000000B7  77 D7	   *	    ja	@C0008
+ 000000B9  BA 00000090 R					mov edx, offset STRING_RESULT												;				
+ 000000BE  E8 00000000 E					call WriteString															;	
+ 000000C3  A1 000000DD R					mov eax, var																;				Move var to eax, to print the result of multiplication.
+ 000000C8  E8 00000000 E					call WriteInt																;				Print result.
+ 000000CD  E8 00000000 E					call crlf																	;				
+							.endif																			;			End of if.
+						.elseif al == '2'																	;		al == 2
+ 000000D2  E9 0000008F	   *	    jmp    @C000A
+ 000000D7		   *@C0002:
+ 000000D7  3C 32	   *	    cmp    al, '2'
+ 000000D9  0F 85 00000087  *	    jne    @C000B
+ 000000DF  BA 0000004C R			mov edx, offset STRING_HOW_DIVIDE													;	
+ 000000E4  E8 00000000 E				call WriteString																;	
+ 000000E9  E8 00000000 E				call crlf																		;	
+ 000000EE  E8 00000000 E				call ReadInt																	;			Get the numbers to divide.
+							.if (eax > 0) && (eax <= 5)														;			If the number is between 1 to 5,
+ 000000F3  83 F8 00	   *	    cmp    eax, 000h
+ 000000F6  76 6E	   *	    jbe    @C000D
+ 000000F8  83 F8 05	   *	    cmp    eax, 005h
+ 000000FB  77 69	   *	    ja	@C000D
+ 000000FD  48							dec eax																		;				Decrease eax, same reason as multiplication.
+ 000000FE  A3 000000D9 R					mov count, eax																;				Move eax to count.
+ 00000103  BA 0000007E R					mov edx, offset STRING_INSERT												;				
+ 00000108  E8 00000000 E					call WriteString															;	
+ 0000010D  E8 00000000 E					call ReadInt																;				Get the first number, number to be divided.
+ 00000112  A3 000000DD R					mov var, eax																;				Move eax to var.
+								.while count > 0															;				Loop until count is zero.
+ 00000117  EB 2B	   *	    jmp    @C0010
+ 00000119		   *@C0011:
+ 00000119  FF 0D 000000D9 R						dec count																;					Decrease count.
+ 0000011F  BA 0000007E R						mov edx, offset STRING_INSERT											;	
+ 00000124  E8 00000000 E						call WriteString														;	
+ 00000129  E8 00000000 E						call ReadInt															;					Get a number to eax.
+ 0000012E  BA 00000000							mov edx, 0																;					Set edx to zero, to prevent errors by dummy data.
+ 00000133  87 05 000000DD R						xchg eax, var															;					Exchange eax and var, to divide base number, not a divisor just gotten.
+ 00000139  F7 3D 000000DD R						idiv var																;					Divide eax by var.
+ 0000013F  A3 000000DD R						mov var, eax															;					Move eax, the quotient, to var.
+								.endw																		;				End of loop.
+ 00000144		   *@C0010:
+ 00000144  83 3D 000000D9 R
 	   00		   *	    cmp    count, 000h
- 0000009D  77 DD	   *	    ja	@C0007
- 0000009F  E8 00000000 E		call crlf
+ 0000014B  77 CC	   *	    ja	@C0011
+ 0000014D  BA 00000090 R					mov edx, offset STRING_RESULT												;	
+ 00000152  E8 00000000 E					call WriteString															;	
+ 00000157  A1 000000DD R					mov eax, var																;				Move var to eax, to print the result of division.
+ 0000015C  E8 00000000 E					call WriteInt																;				Print result.
+ 00000161  E8 00000000 E					call crlf																	;	
+							.endif																			;			End of if.
+						.endif																				;		End of if.
+ 00000166		   *@C000D:
+																											;	
+ 00000166		   *@C000B:
+ 00000166		   *@C000A:
+ 00000166		   *@C0004:
+ 00000166  E8 00000000 E			call crlf																			;	
+					.until al == '3'																		;		End of loop. Exit this loop when al == '3'.
+ 0000016B  3C 33	   *	    cmp    al, '3'
+ 0000016D  0F 85 FFFFFE8D  *	    jne    @C0001
 
- 000000A4  68 0000003D R		push offset ary1
- 000000A9  68 00000065 R		push offset ary2
- 000000AE  6A 0A			push arrayLength
- 000000B0  FF 35 0000008D R		push diff
- 000000B6  E8 00000016			call CountNearMatches
 
- 000000BB  E8 00000000 E		call crlf
- 000000C0  E8 00000000 E		call WriteInt
- 000000C5  E8 00000000 E		call crlf
 
 					invoke ExitProcess,0
- 000000CA  6A 00	   *	    push   +000000000h
- 000000CC  E8 00000000 E   *	    call   ExitProcess
- 000000D1			main endp
-
-
- 000000D1			CountNearMatches proc
- 000000D1  C8 0004 00			enter 4,0
- 000000D5  56				push esi
- 000000D6  57				push edi
- 000000D7  53				push ebx
- 000000D8  52				push edx
-
- 000000D9  8B 45 0C			mov eax, arrayLengthArg
- 000000DC  89 45 FC			mov countArg, eax
- 000000DF  B8 00000000			mov eax, 0
- 000000E4  8B 75 14			mov esi, arrayFirst
- 000000E7  8B 7D 10			mov edi, arraySecond
-					.while countArg > 0
- 000000EA  EB 1C	   *	    jmp    @C0009
- 000000EC		   *@C000A:
- 000000EC  FF 4D FC				dec countArg
- 000000EF  8B 1F				mov ebx, [edi]
- 000000F1  03 5D 08				add ebx, diffArg
- 000000F4  8B 17				mov edx, [edi]
- 000000F6  2B 55 08				sub edx, diffArg
-						.if dword ptr [esi] >= edx && dword ptr [esi] <= ebx
- 000000F9  39 16	   *	    cmp    dword ptr [esi], edx
- 000000FB  72 05	   *	    jb	@C000B
- 000000FD  39 1E	   *	    cmp    dword ptr [esi], ebx
- 000000FF  77 01	   *	    ja	@C000B
- 00000101  40						inc eax
-						.endif
- 00000102		   *@C000B:
- 00000102  83 C7 04				add edi, 4
- 00000105  83 C6 04				add esi, 4
-					.endw
- 00000108		   *@C0009:
- 00000108  83 7D FC 00	   *	    cmp    dword ptr [ebp - 004h], 000h
- 0000010C  77 DE	   *	    ja	@C000A
-
- 0000010E  5A				pop edx
- 0000010F  5B				pop ebx
- 00000110  5F				pop edi
- 00000111  5E				pop esi
- 00000112  C9				leave
- 00000113  C2 0010			ret 16
- 00000116			CountNearMatches endp
-
-
- 00000116			RandomizeArray proc
- 00000116  C8 0004 00			enter 4,0
- 0000011A  60				pushad
- 0000011B  C7 45 FC			mov countArg, arrayLength
-	   0000000A
- 00000122  8B 75 08			mov esi, targetAddr
-					.while countArg > 0
- 00000125  EB 15	   *	    jmp    @C000F
- 00000127		   *@C0010:
- 00000127  FF 4D FC				dec countArg
- 0000012A  B8 00000007				mov eax, randomWidth
- 0000012F  E8 00000000 E			call RandomRange
- 00000134  83 C0 0A				add eax, randomOffset
- 00000137  89 06				mov targetArg, eax
- 00000139  83 C6 04				add esi, 4
-					.endw
- 0000013C		   *@C000F:
- 0000013C  83 7D FC 00	   *	    cmp    dword ptr [ebp - 004h], 000h
- 00000140  77 E5	   *	    ja	@C0010
- 00000142  61				popad
- 00000143  C9				leave
- 00000144  C2 0004			ret 4
- 00000147			RandomizeArray endp
-
+ 00000173  6A 00	   *	    push   +000000000h
+ 00000175  E8 00000000 E   *	    call   ExitProcess
+ 0000017A			main endp
 				end main
-Microsoft (R) Macro Assembler Version 14.16.27030.1	    05/15/19 14:28:23
+Microsoft (R) Macro Assembler Version 14.16.27030.1	    05/15/19 17:17:03
 AddTwo.asm						     Symbols 2 - 1
 
 
@@ -312,8 +297,8 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
-_DATA  . . . . . . . . . . . . .	32 Bit	 00000095 Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 00000147 Para	  Public  'CODE'	
+_DATA  . . . . . . . . . . . . .	32 Bit	 000000E1 Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 0000017A Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
@@ -323,7 +308,6 @@ Procedures, parameters, and locals:
 CloseFile  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 CloseHandle  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Clrscr . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-CountNearMatches . . . . . . . .	P Near	 000000D1 _TEXT	Length= 00000045 Public STDCALL
 CreateFileA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 CreateOutputFile . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Crlf . . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -371,7 +355,6 @@ ParseInteger32 . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 PeekConsoleInputA  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Random32 . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 RandomRange  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-RandomizeArray . . . . . . . . .	P Near	 00000116 _TEXT	Length= 00000031 Public STDCALL
 Randomize  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ReadChar . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ReadConsoleA . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -422,7 +405,7 @@ WriteStackFrame  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 000000D1 Public STDCALL
+main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000017A Public STDCALL
 printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 scanf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 wsprintfA  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
@@ -556,8 +539,14 @@ SHIFT_PRESSED  . . . . . . . . .	Number	 00000010h
 STD_ERROR_HANDLE . . . . . . . .	Number	 -0000000Ch   
 STD_INPUT_HANDLE . . . . . . . .	Number	 -0000000Ah   
 STD_OUTPUT_HANDLE  . . . . . . .	Number	 -0000000Bh   
-STR_SETDIFF  . . . . . . . . . .	Byte	 00000002 _DATA	
-STR_SPACE  . . . . . . . . . . .	Byte	 00000000 _DATA	
+STRING_HOW_DIVIDE  . . . . . . .	Byte	 0000004C _DATA	
+STRING_HOW_MULTIPLY  . . . . . .	Byte	 00000018 _DATA	
+STRING_INSERT  . . . . . . . . .	Byte	 0000007E _DATA	
+STRING_ONE . . . . . . . . . . .	Byte	 0000009F _DATA	
+STRING_RESULT  . . . . . . . . .	Byte	 00000090 _DATA	
+STRING_THREE . . . . . . . . . .	Byte	 000000CD _DATA	
+STRING_TWO . . . . . . . . . . .	Byte	 000000B7 _DATA	
+STRING_WHAT_WANT . . . . . . . .	Byte	 00000000 _DATA	
 SetConsoleTitle  . . . . . . . .	Text   	 SetConsoleTitleA
 TAB  . . . . . . . . . . . . . .	Number	 00000009h   
 TRUE . . . . . . . . . . . . . .	Number	 00000001h   
@@ -643,20 +632,11 @@ VK_UP  . . . . . . . . . . . . .	Number	 00000026h
 WINDOW_BUFFER_SIZE_EVENT . . . .	Number	 00000004h   
 WriteConsoleOutputCharacter  . .	Text   	 WriteConsoleOutputCharacterA
 WriteConsole . . . . . . . . . .	Text   	 WriteConsoleA
-arrayFirst . . . . . . . . . . .	Text   	 dword ptr [ebp + 20]
-arrayLengthArg . . . . . . . . .	Text   	 dword ptr [ebp + 12]
-arrayLength  . . . . . . . . . .	Number	 0000000Ah   
-arraySecond  . . . . . . . . . .	Text   	 dword ptr [ebp + 16]
-ary1 . . . . . . . . . . . . . .	DWord	 0000003D _DATA	
-ary2 . . . . . . . . . . . . . .	DWord	 00000065 _DATA	
 black  . . . . . . . . . . . . .	Number	 00000000h   
 blue . . . . . . . . . . . . . .	Number	 00000001h   
 brown  . . . . . . . . . . . . .	Number	 00000006h   
-countArg . . . . . . . . . . . .	Text   	 dword ptr [ebp - 4]
-count  . . . . . . . . . . . . .	DWord	 00000091 _DATA	
+count  . . . . . . . . . . . . .	DWord	 000000D9 _DATA	
 cyan . . . . . . . . . . . . . .	Number	 00000003h   
-diffArg  . . . . . . . . . . . .	Text   	 dword ptr [ebp + 8]
-diff . . . . . . . . . . . . . .	DWord	 0000008D _DATA	
 exit . . . . . . . . . . . . . .	Text   	 INVOKE ExitProcess,0
 gray . . . . . . . . . . . . . .	Number	 00000008h   
 green  . . . . . . . . . . . . .	Number	 00000002h   
@@ -667,11 +647,8 @@ lightGreen . . . . . . . . . . .	Number	 0000000Ah
 lightMagenta . . . . . . . . . .	Number	 0000000Dh   
 lightRed . . . . . . . . . . . .	Number	 0000000Ch   
 magenta  . . . . . . . . . . . .	Number	 00000005h   
-randomOffset . . . . . . . . . .	Number	 0000000Ah   
-randomWidth  . . . . . . . . . .	Number	 00000007h   
 red  . . . . . . . . . . . . . .	Number	 00000004h   
-targetAddr . . . . . . . . . . .	Text   	 dword ptr [ebp + 8]
-targetArg  . . . . . . . . . . .	Text   	 dword ptr [esi]
+var  . . . . . . . . . . . . . .	DWord	 000000DD _DATA	
 white  . . . . . . . . . . . . .	Number	 0000000Fh   
 wsprintf . . . . . . . . . . . .	Text   	 wsprintfA
 yellow . . . . . . . . . . . . .	Number	 0000000Eh   
